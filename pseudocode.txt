@@ -1,0 +1,56 @@
+
+int main(int argc, char *argv[]){
+    print("Brian shell v1.0\n\n");
+    int isRunning = 1;
+
+    //dispatcher
+    while(isRunning){
+
+        print("->")
+
+        get input
+
+        check if first word is builtin command
+
+        if(is built in command){
+
+            run command
+        }
+
+        else{
+
+            if(valid path){
+                run program
+            }
+
+            else{
+                throw error
+            }
+        }
+
+
+
+
+    }
+
+
+
+    command = argv[1];
+    char builtin_commands[] = {"help", "pwd", "exit", "cd"};
+
+    //check if built-in command is called
+    for(int i = 0; i < 4; i++){
+        if(command == builtin_commands[i]){
+
+            run command;
+
+        }
+    }
+
+
+}
+
+void change_directory(char *path){};
+void print_working_directory();
+void help();
+void exit();
