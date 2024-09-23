@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "helpers.h"
 #include "main.h"
@@ -19,12 +21,14 @@ int main(int argc, char *argv[]){
     int size = 100;
     int i = 0;
     while(1){
-        i = 0;
         printf("->");
+        i = 0;
 
         fgets(input, size, stdin);
 
         input[strcspn(input, "\n")] = '\0';
+
+        //int ISREG = file_isreg(input);
         parsed_input = parse(input, " ");
 
         if(strcmp(parsed_input[0], "help") == 0){
@@ -44,11 +48,19 @@ int main(int argc, char *argv[]){
         }
 
         else{
-            
-            execl(parsed_input[0], parsed_input[1]);
+            pid_t pid = fork();
+            if(pid < 0){
+                printf("error");
+                return 0;
+            }
+            else if(pid == 0){
+                execl(parsed_input[0], parsed_input[1]);
+                return 1;
+            }
+            else{
+                wait(NULL);
+            }
         }
-
-
 
     }
     
@@ -90,4 +102,14 @@ void pwd(){
 
 void cd(char *path){
     chdir(path);
+}
+
+//checks if given string is a valid file
+int file_isreg(const char *path) {
+    struct stat st;
+
+    if (stat(path, &st) < 0)
+        return -1;
+
+    return S_ISREG(st.st_mode);
 }
