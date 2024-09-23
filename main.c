@@ -43,6 +43,11 @@ int main(int argc, char *argv[]){
             cd(parsed_input[1]);
         }
 
+        else{
+            
+            execl(parsed_input[0], parsed_input[1]);
+        }
+
 
 
     }
