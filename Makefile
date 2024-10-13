@@ -1,5 +1,6 @@
 compile:
-	gcc -o main main.c helpers.c
+	gcc -o bosh main.c helpers.c
 
 clean:
-	rm ./main
+	sudo cp ./bosh /usr/bin/
+	rm ./bosh

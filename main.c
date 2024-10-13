@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include <dirent.h>
+#include <errno.h>
+
 
 #include "helpers.h"
 #include "main.h"
@@ -19,48 +23,31 @@ int main(int argc, char *argv[]){
     char **parsed_input;
 
     int size = 100;
-    int i = 0;
     while(1){
-        printf("->");
-        i = 0;
+        printf("-> ");
 
+        //get input
         fgets(input, size, stdin);
 
         input[strcspn(input, "\n")] = '\0';
 
         //int ISREG = file_isreg(input);
         parsed_input = parse(input, " ");
+        
 
-        if(strcmp(parsed_input[0], "help") == 0){
-            help();
-        }
+        if(strcmp(parsed_input[0], "help") == 0)  {help();}
 
-        else if(strcmp(parsed_input[0], "exit") == 0){
-            return 1;
-        }
+        else if(strcmp(parsed_input[0], "exit") == 0)  {return 1;}
 
-        else if(strcmp(parsed_input[0], "pwd") == 0){
-            pwd();
-        }
+        else if(strcmp(parsed_input[0], "pwd") == 0)  {pwd();}
 
-        else if(strcmp(parsed_input[0], "cd") == 0){
-            cd(parsed_input[1]);
-        }
+        else if(strcmp(parsed_input[0], "cd") == 0)  {cd(parsed_input[1]);}
 
-        else{
-            pid_t pid = fork();
-            if(pid < 0){
-                printf("error");
-                return 0;
-            }
-            else if(pid == 0){
-                execl(parsed_input[0], parsed_input[1]);
-                return 1;
-            }
-            else{
-                wait(NULL);
-            }
-        }
+        else  {execute(parsed_input[0]);}
+        
+    
+       
+       
 
     }
     
@@ -84,7 +71,7 @@ void help(){
     cd   - Changes current working directory to specified path\n\
     \n");
 }
-void pwd(){
+char *pwd(){
     long size;
     char *buf;
     char *ptr;
@@ -98,6 +85,7 @@ void pwd(){
     }
 
     printf("%s\n", ptr);
+    return ptr;
 }
 
 void cd(char *path){
@@ -113,3 +101,98 @@ int file_isreg(const char *path) {
 
     return S_ISREG(st.st_mode);
 }
+
+char *path_resolution(char *env_var){
+    char *PATH = getenv("PATH");
+    char *token = strtok(PATH, ":");
+
+    while(token != NULL){
+        
+        if(search(token, env_var)){
+            char *result = malloc(strlen(token) + strlen(env_var) + 2);
+            result = strcpy(result, token);
+            result = strcat(result, "/");
+            result = strcat(result, env_var);
+            return result;
+        }
+        token = strtok(NULL, ":");
+    }
+
+    return NULL;
+}
+
+int search(char *PATH, char *var){
+
+    DIR *folder;
+    struct dirent *entry;
+    int files = 0;
+
+    folder = opendir(PATH);
+    if(folder == NULL)
+    {
+        perror("Unable to read directory");
+        return(1);
+    }
+
+    while( (entry=readdir(folder)) )
+    {
+        if(strcmp(entry->d_name, var) == 0){
+            return 1;
+        }
+    }
+    return 0;
+
+    closedir(folder);
+}
+
+void execute(char *path){
+    pid_t pid = fork();
+            if(pid < 0){
+                printf("error");
+            }
+            else if(pid == 0){
+                if(access(path, F_OK) == 0){
+                    execl(path, (const char*)NULL, (char*)NULL);
+                }
+                else{
+                    path = path_resolution(path);
+                    if(path != NULL){
+                        execl(path, (const char*)NULL, (char*)NULL);
+                    }
+                    else{
+                        printf("File does not exist\n");
+                    }
+                }
+                
+            }
+            else{
+                wait(NULL);
+            }
+    
+}
+
+/*
+void read_dirent(){
+    DIR *d;
+    struct dirent *dir;
+    char path[1000]="/home/joy/Downloads";
+    d = opendir(path);
+    char full_path[1000];
+    if (d)
+    {
+        while ((dir = readdir(d)) != NULL)
+        {
+            //Condition to check regular file.
+            if(dir->d_type==DT_REG){
+                full_path[0]='\0';
+                strcat(full_path,path);
+                strcat(full_path,"/");
+                strcat(full_path,dir->d_name);
+                printf("%s\n",full_path);
+            }
+        }
+        closedir(d);
+    }
+    
+    return(0);
+}*/

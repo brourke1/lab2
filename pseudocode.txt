@@ -19,18 +19,29 @@ int main(int argc, char *argv[]){
 
         else{
 
-            if(valid path){
-                run program
-            }
-
-            else{
-                throw error
-            }
+            execute()
         }
 
 
 
 
+    }
+    
+    execute(path){
+        if valid path{
+            run file
+        }
+
+        else{
+            check environment variables
+
+            if(valid env var){
+                run command
+            }
+            else{
+                error
+            }
+        }
     }
 
 
